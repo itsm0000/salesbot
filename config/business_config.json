@@ -1,0 +1,47 @@
+{
+    "business": {
+        "name": "بغداد للإنارة",
+        "name_en": "Baghdad Lighting",
+        "industry": "lighting",
+        "city": "بغداد",
+        "tone": "friendly_merchant",
+        "formality_level": 3,
+        "working_hours": {
+            "start": "09:00",
+            "end": "21:00",
+            "timezone": "Asia/Baghdad"
+        },
+        "currency": "IQD",
+        "currency_symbol": "دينار"
+    },
+    "personality": {
+        "emoji_usage": 30,
+        "negotiation_aggressiveness": 3,
+        "default_honorific": "حجي",
+        "response_delay_min_seconds": 2,
+        "response_delay_max_seconds": 8
+    },
+    "policies": {
+        "shipping": {
+            "baghdad": 5000,
+            "basra": 10000,
+            "erbil": 10000,
+            "other_cities": 12000
+        },
+        "discounts": {
+            "min_items_for_discount": 3,
+            "max_discount_percent": 10,
+            "bulk_discount_threshold": 5,
+            "bulk_discount_percent": 15
+        },
+        "returns": {
+            "days_allowed": 7,
+            "condition": "منتج غير مفتوح"
+        }
+    },
+    "sales_goals": {
+        "primary": "بيع المنتج بأفضل سعر ممكن",
+        "secondary": "الحصول على رقم الزبون للمتابعة",
+        "upsell": "عرض منتجات إضافية مكملة"
+    }
+}
