@@ -19,6 +19,7 @@ load_dotenv()
 # Import local modules
 from .personality import PersonalityEngine, PersonalityConfig
 from .knowledge import KnowledgeManager
+from .negotiation import NegotiationEngine, Negotiationstate
 
 # Import prompt templates
 import sys
@@ -90,11 +91,12 @@ class Brain:
             raise ValueError("GEMINI_API_KEY environment variable not set")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash")
+        self.model = genai.GenerativeModel("models/gemini-flash-latest")
 
         # Initialize components
         self.personality = PersonalityEngine(personality_config)
         self.knowledge = KnowledgeManager(products_path)
+        self.negotiation_engine = NegotiationEngine(business_config_path if isinstance(business_config_path, dict) else None)
         
         # Load business config
         self.business_config = self._load_business_config(business_config_path)
@@ -175,11 +177,69 @@ class Brain:
         system_prompt = self._build_system_prompt()
         conversation_history = context.get_history_text()
 
+        # Negotiation Logic
+        negotiation_instruction = ""
+        
+        # Check for active negotiation in metadata
+        current_neg_state = context.metadata.get("negotiation_state")
+        
+        # Try to identify product from context or message
+        product_id = context.metadata.get("current_product_id")
+        
+        # Use improved product detection
+        if not product_id:
+            product_id = self._find_product_in_message(message)
+            if product_id:
+                 context.metadata["current_product_id"] = product_id
+        
+        # Simple intent detection for new negotiation
+        is_negotiating = any(w in message for w in ["غالي", "خصم", "تخفيض", "آخر سعر", "نزل"])
+        
+        if is_negotiating or current_neg_state:
+            if not current_neg_state and product_id:
+                # Start new negotiation
+                product = self.knowledge.products.get(product_id)
+                if product:
+                    current_neg_state = self.negotiation_engine.start_negotiation(product_id, product.price)
+                    context.metadata["negotiation_state"] = current_neg_state
+            
+            if current_neg_state:
+                # Extract number from message if possible (very basic extraction)
+                import re
+                numbers = re.findall(r'\d+', message.replace(',', ''))
+                customer_offer = float(numbers[0]) if numbers else None
+                
+                response_key, new_price = self.negotiation_engine.process_offer(current_neg_state, customer_offer)
+                
+                instruction_text = self.negotiation_engine.get_response_prompt(
+                    response_key, new_price, current_neg_state.original_price
+                )
+                
+                negotiation_instruction = f"\n\n[تعليمات التفاوض]: {instruction_text}\n"
+
+        # Objection Handling Logic
+        objection_instruction = ""
+        if "اصلي" in message or "تجاري" in message or "صيني" in message:
+            objection_instruction += "\n[تعليمات]: الزبون يسأل عن الجودة. أكد له أن البضاعة أصلية (درجة أولى) وعليها ضمان. استخدم لهجة واثقة.\n"
+        
+        if "ضمان" in message or "كفالة" in message:
+             objection_instruction += "\n[تعليمات]: اشرح سياسة الضمان: استبدال فوري خلال سنة لأي عطل فني.\n"
+
+        # Upselling Logic
+        upsell_instruction = ""
+        # If agreement detected or positive negotiation
+        is_agreement = any(w in message for w in ["اتفقنا", "تمام", "ماشي", "اريد", "اشتري"])
+        if is_agreement or (current_neg_state and not current_neg_state.is_active):
+             # Generic upselling for now
+             upsell_instruction = "\n[تعليمات]: الزبون وافق على الشراء. اقترح عليه منتجات إضافية (Cross-sell) مثل: بطاريات، شريط لاصق، أو لمبات إضافية. بس لا تلح زايد.\n"
+
         full_prompt = f"""{system_prompt}
 
 المحادثة السابقة:
 {conversation_history}
-
+{negotiation_instruction}
+{objection_instruction}
+{upsell_instruction}
 الرد على آخر رسالة من الزبون:"""
 
         try:
@@ -212,6 +272,28 @@ class Brain:
                 flags={"error": str(e)},
                 processing_time_ms=int((time.time() - start_time) * 1000),
             )
+            
+    def _find_product_in_message(self, message: str) -> Optional[str]:
+        """Find product ID by matching keywords in message"""
+        message_cleaned = message.replace('ال', '')  # Simple normalization
+        
+        best_match_id = None
+        max_matches = 0
+        
+        for p_id, product in self.knowledge.products.items():
+            # Create keywords from product name (split by space)
+            keywords = [k for k in product.name.split() if len(k) > 2]
+            
+            matches = 0
+            for k in keywords:
+                if k.replace('ال', '') in message_cleaned:
+                    matches += 1
+            
+            if matches > 0 and matches > max_matches:
+                max_matches = matches
+                best_match_id = p_id
+                
+        return best_match_id
 
     def process_message_sync(
         self,

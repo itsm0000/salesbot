@@ -76,9 +76,9 @@ async def startup_event():
             products_path=products_path,
             business_config_path=config_path,
         )
-        print("✅ Brain initialized successfully")
+        print("Brain initialized successfully")
     except Exception as e:
-        print(f"❌ Error initializing Brain: {e}")
+        print(f"Error initializing Brain: {e}")
         raise
 
 
@@ -102,6 +102,33 @@ async def serve_styles():
 
 
 # API Endpoints
+@app.post("/api/webhook/{platform}")
+async def webhook(platform: str, request: Request):
+    """Unified webhook handler for all platforms"""
+    adapter = AdapterFactory.get_adapter(platform)
+    if not adapter:
+        raise HTTPException(status_code=404, detail=f"Platform '{platform}' not supported or configured")
+
+    # Handle different content types (Twilio uses Form data, Telegram uses JSON)
+    try:
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            data = await request.json()
+        elif "application/x-www-form-urlencoded" in content_type:
+            data = await request.form()
+        else:
+            # Fallback or try json
+            data = await request.json()
+    except Exception:
+         # Some hooks might get messy, try simple fallback
+         try:
+             data = await request.body()
+         except:
+             raise HTTPException(status_code=400, detail="Invalid Request Data")
+
+    # 1. Parse normalize message
+    parsed_msg = adapter.parse_request(data)
+    
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Process a chat message and return AI response"""
@@ -179,23 +206,21 @@ async def search_products(query: str):
 
 @app.get("/api/config")
 async def get_config():
-    """Get current business configuration"""
+    """Get business configuration"""
     global brain
     
     if not brain:
         raise HTTPException(status_code=500, detail="Brain not initialized")
-    
     return brain.business_config
 
 
 @app.put("/api/config")
-async def update_config(request: ConfigUpdateRequest):
+async def update_config(config: dict):
     """Update business configuration"""
     global brain
     
     if not brain:
         raise HTTPException(status_code=500, detail="Brain not initialized")
-    
     try:
         # Update in memory
         brain.business_config.update(request.config)
