@@ -20,7 +20,39 @@ class BusinessConfig(BaseModel):
     city: Optional[str] = None
     business_type: Optional[str] = None
     ai_personality: Optional[str] = None
+    target_audience: Optional[str] = "عام"
     auto_reply: bool = True
+
+
+# ... (skipping to update_config) ...
+
+@router.put("/config/{business_id}", response_model=BusinessConfig)
+async def update_config(business_id: int, config: BusinessConfig):
+    """Update business configuration"""
+    async with async_session() as session:
+        result = await session.execute(
+            select(Business).where(Business.id == business_id)
+        )
+        business = result.scalar_one_or_none()
+        
+        if not business:
+            raise HTTPException(status_code=404, detail="Business not found")
+        
+        business.name = config.name
+        business.city = config.city
+        business.business_type = config.business_type
+        business.ai_personality = config.ai_personality
+        business.target_audience = config.target_audience
+        business.auto_reply = config.auto_reply
+        
+        await session.commit()
+        
+        # Update running bot if exists
+        await bot_manager.update_config(business_id, {
+            'business_name': config.name,
+            'business_city': config.city,
+            'target_audience': config.target_audience,
+        })
 
 
 class ProductCreate(BaseModel):

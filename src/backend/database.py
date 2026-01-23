@@ -44,7 +44,8 @@ class Business(Base):
     
     # Bot settings
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
-    ai_personality: Mapped[Optional[str]] = mapped_column(Text)  # Custom personality prompt
+    ai_personality: Mapped[Optional[str]] = mapped_column(Text)
+    target_audience: Mapped[Optional[str]] = mapped_column(String(200), default="عام")
     auto_reply: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Config JSON for flexible settings

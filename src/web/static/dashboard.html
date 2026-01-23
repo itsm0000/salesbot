@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,7 +11,8 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0f172a;
@@ -54,7 +56,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 radial-gradient(ellipse at 20% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
                 radial-gradient(ellipse at 80% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
             pointer-events: none;
@@ -109,8 +111,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Login Screen */
@@ -134,8 +143,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .login-title {
@@ -268,8 +284,15 @@
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         /* Cards */
@@ -450,11 +473,11 @@
             transition: 0.3s;
         }
 
-        input:checked + .toggle-slider {
+        input:checked+.toggle-slider {
             background: var(--accent-primary);
         }
 
-        input:checked + .toggle-slider:before {
+        input:checked+.toggle-slider:before {
             transform: translateX(24px);
         }
 
@@ -489,7 +512,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Add Product Modal */
@@ -522,8 +547,13 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
@@ -627,6 +657,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="app-container">
         <!-- Header -->
@@ -667,7 +698,8 @@
 
                 <div class="form-group">
                     <label class="form-label">اسم المتجر / العمل</label>
-                    <input type="text" class="form-input" id="business-name-input" placeholder="مثال: معرض النور للإنارة">
+                    <input type="text" class="form-input" id="business-name-input"
+                        placeholder="مثال: معرض النور للإنارة">
                 </div>
 
                 <div class="form-group">
@@ -720,7 +752,8 @@
         <div class="screen" id="products-screen">
             <div class="card-header">
                 <h2 class="card-title">📦 المنتجات</h2>
-                <button class="btn btn-primary" style="width: auto; padding: 12px 20px;" onclick="openAddProductModal()">
+                <button class="btn btn-primary" style="width: auto; padding: 12px 20px;"
+                    onclick="openAddProductModal()">
                     + إضافة
                 </button>
             </div>
@@ -747,6 +780,11 @@
                 <div class="form-group">
                     <label class="form-label">المدينة</label>
                     <input type="text" class="form-input" id="settings-city">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الجمهور المستهدف (يحدد أسلوب الكلام)</label>
+                    <input type="text" class="form-input" id="settings-target-audience"
+                        placeholder="مثال: شباب، تجار جملة، عوائل محافظة...">
                 </div>
                 <button class="btn btn-primary" onclick="saveSettings()">حفظ التغييرات</button>
             </div>
@@ -870,7 +908,7 @@
         async function requestCode() {
             const phone = document.getElementById('phone-input').value;
             const btn = document.getElementById('request-code-btn');
-            
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> جاري الإرسال...';
 
@@ -948,7 +986,7 @@
             showScreen('dashboard-screen');
             document.getElementById('bottom-nav').style.display = 'flex';
             document.getElementById('login-screen').style.display = 'none';
-            
+
             await loadBusinessData();
             await loadBotStatus();
             await loadProducts();
@@ -961,150 +999,29 @@
                 document.getElementById('welcome-name').textContent = `مرحباً، ${data.name}`;
                 document.getElementById('settings-name').value = data.name;
                 document.getElementById('settings-city').value = data.city || '';
+                document.getElementById('settings-target-audience').value = data.target_audience || '';
             } catch (e) {
                 console.error('Error loading business data:', e);
             }
         }
 
-        async function loadBotStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/business/status/${businessId}`);
-                const data = await res.json();
-                botRunning = data.running;
-                updateBotUI();
-            } catch (e) {
-                console.error('Error loading bot status:', e);
-            }
-        }
+        // ...
 
-        function updateBotUI() {
-            const dot = document.getElementById('status-dot');
-            const statusText = document.getElementById('status-text');
-            const botIcon = document.getElementById('bot-icon');
-            const botStatusText = document.getElementById('bot-status-text');
-            const botStatusDesc = document.getElementById('bot-status-desc');
-            const toggleBtn = document.getElementById('toggle-bot-btn');
-
-            if (botRunning) {
-                dot.classList.add('active');
-                statusText.textContent = 'يعمل';
-                botIcon.classList.add('running');
-                botStatusText.textContent = 'البوت يعمل الآن! 🟢';
-                botStatusDesc.textContent = 'البوت يرد على رسائل الزبائن تلقائياً';
-                toggleBtn.className = 'btn btn-danger';
-                toggleBtn.innerHTML = '🛑 إيقاف البوت';
-            } else {
-                dot.classList.remove('active');
-                statusText.textContent = 'متوقف';
-                botIcon.classList.remove('running');
-                botStatusText.textContent = 'البوت متوقف';
-                botStatusDesc.textContent = 'اضغط الزر لتشغيل البوت والبدء بالرد على الزبائن';
-                toggleBtn.className = 'btn btn-success';
-                toggleBtn.innerHTML = '🚀 تشغيل البوت';
-            }
-        }
-
-        async function toggleBot() {
-            const btn = document.getElementById('toggle-bot-btn');
-            const endpoint = botRunning ? 'stop' : 'start';
-            
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>';
-
-            try {
-                const res = await fetch(`${API_BASE}/business/${endpoint}/${businessId}`, {
-                    method: 'POST'
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    botRunning = !botRunning;
-                    updateBotUI();
-                }
-            } catch (e) {
-                console.error('Error toggling bot:', e);
-            }
-
-            btn.disabled = false;
-            updateBotUI();
-        }
-
-        // Products
-        async function loadProducts() {
-            try {
-                const res = await fetch(`${API_BASE}/business/products/${businessId}`);
-                const products = await res.json();
-                
-                document.getElementById('products-count').textContent = products.length;
-                
-                const listEl = document.getElementById('products-list');
-                if (products.length === 0) {
-                    listEl.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">📦</div>
-                            <p>لا توجد منتجات بعد</p>
-                        </div>
-                    `;
-                } else {
-                    listEl.innerHTML = products.map(p => `
-                        <div class="product-item">
-                            <span class="product-name">${p.name}</span>
-                            <span class="product-price">${p.price ? p.price.toLocaleString() + ' د.ع' : '-'}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error('Error loading products:', e);
-            }
-        }
-
-        function openAddProductModal() {
-            document.getElementById('add-product-modal').classList.add('active');
-        }
-
-        function closeAddProductModal() {
-            document.getElementById('add-product-modal').classList.remove('active');
-        }
-
-        async function addProduct() {
-            const name = document.getElementById('product-name').value;
-            const description = document.getElementById('product-description').value;
-            const price = parseFloat(document.getElementById('product-price').value) || null;
-
-            try {
-                const res = await fetch(`${API_BASE}/business/products/${businessId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, description, price })
-                });
-
-                if (res.ok) {
-                    closeAddProductModal();
-                    await loadProducts();
-                    // Clear form
-                    document.getElementById('product-name').value = '';
-                    document.getElementById('product-description').value = '';
-                    document.getElementById('product-price').value = '';
-                }
-            } catch (e) {
-                console.error('Error adding product:', e);
-            }
-        }
-
-        // Settings
         async function saveSettings() {
             const name = document.getElementById('settings-name').value;
             const city = document.getElementById('settings-city').value;
+            const target_audience = document.getElementById('settings-target-audience').value;
 
             try {
                 await fetch(`${API_BASE}/business/config/${businessId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, city })
+                    body: JSON.stringify({ name, city, target_audience })
                 });
-                alert('تم حفظ الإعدادات');
+                alert('تم حفظ الإعدادات بنجاح!');
             } catch (e) {
                 console.error('Error saving settings:', e);
+                alert('حدث خطأ أثناء الحفظ');
             }
         }
 
@@ -1114,4 +1031,5 @@
         }
     </script>
 </body>
+
 </html>
