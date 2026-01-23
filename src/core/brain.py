@@ -273,7 +273,7 @@ class Brain:
         except Exception as e:
             print(f"Error generating response: {e}")
             # Return a safe fallback response
-            fallback = "عذراً حجي، صار خطأ تقني. دقيقة وأرد عليك..."
+            fallback = f"عذراً، صار خطأ تقني بسيط ({str(e)}). دقيقة وأرد عليك..."
             return BrainResponse(
                 response_text=fallback,
                 confidence_score=0.1,
