@@ -223,7 +223,8 @@ class BotManager:
                     result = await bot.brain.process_message(
                         message=message,
                         customer_id=str(sender_id),
-                        platform="telegram"
+                        platform="telegram",
+                        customer_name=sender_name
                     )
                     
                     # Send response
