@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 # Database URL (default to SQLite)
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    f"sqlite+aiosqlite:///{Path(__file__).parent.parent.parent / 'muntazir.db'}"
+    f"sqlite+aiosqlite:///{Path(__file__).parent.parent.parent / 'data' / 'muntazir.db'}"
 )
 
 # Create async engine
