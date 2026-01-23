@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>منتظر | لوحة التحكم</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --bg-elevated: #334155;
+            --accent-primary: #f59e0b;
+            --accent-secondary: #fbbf24;
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --error: #ef4444;
+            --border: #334155;
+            --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-dark: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            --shadow-glow: 0 0 40px rgba(245, 158, 11, 0.15);
+            --font-arabic: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-arabic);
+            background: var(--gradient-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Animated Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(ellipse at 20% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Login Screen */
+        .login-hero {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .login-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: var(--gradient-gold);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: var(--shadow-glow);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-gold);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: #fff;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 24px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-dot.active {
+            background: var(--success);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-icon {
+            font-size: 1.25rem;
+        }
+
+        /* Product List */
+        .product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-name {
+            font-weight: 500;
+        }
+
+        .product-price {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            padding: 12px 0;
+            z-index: 100;
+        }
+
+        .nav-items {
+            display: flex;
+            gap: 8px;
+            max-width: 480px;
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .nav-item.active {
+            color: var(--accent-primary);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-elevated);
+            border-radius: 32px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--accent-primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Add Product Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: var(--bg-elevated);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Code Input */
+        .code-input-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .code-input {
+            width: 56px;
+            height: 64px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Big Bot Control */
+        .bot-control {
+            text-align: center;
+            padding: 32px;
+            background: var(--bg-card);
+            border-radius: 24px;
+            margin-bottom: 24px;
+        }
+
+        .bot-control-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: var(--bg-elevated);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .bot-control-icon.running {
+            background: var(--success);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .bot-control-status {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .bot-control-desc {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">منتظر</div>
+            <div class="tagline">وكيل المبيعات الذكي</div>
+        </header>
+
+        <!-- Login Screen -->
+        <div class="screen active" id="login-screen">
+            <div class="login-hero">
+                <div class="login-icon">🛒</div>
+                <h1 class="login-title">أهلاً بيك!</h1>
+                <p class="login-subtitle">سجّل دخولك عبر التلغرام لتفعيل بوت المبيعات</p>
+            </div>
+
+            <div id="phone-step">
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-input" id="phone-input" placeholder="+964 XXX XXX XXXX" dir="ltr">
+                </div>
+                <button class="btn btn-primary" id="request-code-btn" onclick="requestCode()">
+                    إرسال رمز التحقق
+                </button>
+            </div>
+
+            <div id="code-step" style="display: none;">
+                <p style="text-align: center; margin-bottom: 16px; color: var(--text-secondary);">
+                    أدخل الرمز المرسل إلى التلغرام
+                </p>
+                <div class="code-input-container">
+                    <input type="text" class="code-input" maxlength="1" data-index="0">
+                    <input type="text" class="code-input" maxlength="1" data-index="1">
+                    <input type="text" class="code-input" maxlength="1" data-index="2">
+                    <input type="text" class="code-input" maxlength="1" data-index="3">
+                    <input type="text" class="code-input" maxlength="1" data-index="4">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">اسم المتجر / العمل</label>
+                    <input type="text" class="form-input" id="business-name-input" placeholder="مثال: معرض النور للإنارة">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" class="form-input" id="business-city-input" placeholder="مثال: بغداد">
+                </div>
+
+                <button class="btn btn-primary" id="verify-code-btn" onclick="verifyCode()">
+                    تأكيد وتسجيل الدخول
+                </button>
+            </div>
+
+            <div id="login-message"></div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div class="screen" id="dashboard-screen">
+            <div class="dashboard-header">
+                <div class="welcome-text" id="welcome-name">مرحباً!</div>
+                <div class="bot-status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span id="status-text">متوقف</span>
+                </div>
+            </div>
+
+            <!-- Bot Control -->
+            <div class="bot-control">
+                <div class="bot-control-icon" id="bot-icon">🤖</div>
+                <div class="bot-control-status" id="bot-status-text">البوت متوقف</div>
+                <div class="bot-control-desc" id="bot-status-desc">اضغط الزر لتشغيل البوت والبدء بالرد على الزبائن</div>
+                <button class="btn btn-success" id="toggle-bot-btn" onclick="toggleBot()">
+                    🚀 تشغيل البوت
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="products-count">0</div>
+                    <div class="stat-label">المنتجات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="conversations-count">0</div>
+                    <div class="stat-label">المحادثات</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Screen -->
+        <div class="screen" id="products-screen">
+            <div class="card-header">
+                <h2 class="card-title">📦 المنتجات</h2>
+                <button class="btn btn-primary" style="width: auto; padding: 12px 20px;" onclick="openAddProductModal()">
+                    + إضافة
+                </button>
+            </div>
+
+            <div id="products-list">
+                <div class="empty-state">
+                    <div class="empty-icon">📦</div>
+                    <p>لا توجد منتجات بعد</p>
+                    <p style="font-size: 0.875rem;">أضف منتجاتك ليتمكن البوت من عرضها للزبائن</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div class="screen" id="settings-screen">
+            <h2 style="margin-bottom: 24px;">⚙️ الإعدادات</h2>
+
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">🏪 معلومات المتجر</div>
+                <div class="form-group">
+                    <label class="form-label">اسم المتجر</label>
+                    <input type="text" class="form-input" id="settings-name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" class="form-input" id="settings-city">
+                </div>
+                <button class="btn btn-primary" onclick="saveSettings()">حفظ التغييرات</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="margin-bottom: 16px;">🤖 سلوك البوت</div>
+                <div class="toggle-container">
+                    <span>الرد التلقائي</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-reply-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <button class="btn btn-danger" onclick="logout()">🚪 تسجيل الخروج</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+            <div class="nav-items">
+                <button class="nav-item active" data-screen="dashboard-screen">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">الرئيسية</span>
+                </button>
+                <button class="nav-item" data-screen="products-screen">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-label">المنتجات</span>
+                </button>
+                <button class="nav-item" data-screen="settings-screen">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">الإعدادات</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal-overlay" id="add-product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">إضافة منتج جديد</h3>
+                <button class="modal-close" onclick="closeAddProductModal()">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">اسم المنتج</label>
+                <input type="text" class="form-input" id="product-name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">الوصف</label>
+                <input type="text" class="form-input" id="product-description">
+            </div>
+            <div class="form-group">
+                <label class="form-label">السعر (دينار)</label>
+                <input type="number" class="form-input" id="product-price" dir="ltr">
+            </div>
+            <button class="btn btn-primary" onclick="addProduct()">إضافة المنتج</button>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let businessId = localStorage.getItem('businessId');
+        let phoneCodeHash = null;
+        let currentPhone = null;
+        let botRunning = false;
+
+        // API Base
+        const API_BASE = '';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (businessId) {
+                showDashboard();
+            }
+            setupNavigation();
+            setupCodeInputs();
+        });
+
+        // Navigation
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const screenId = item.dataset.screen;
+                    showScreen(screenId);
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Code Input Auto-Focus
+        function setupCodeInputs() {
+            const inputs = document.querySelectorAll('.code-input');
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+
+        function getCode() {
+            return Array.from(document.querySelectorAll('.code-input')).map(i => i.value).join('');
+        }
+
+        // Auth
+        async function requestCode() {
+            const phone = document.getElementById('phone-input').value;
+            const btn = document.getElementById('request-code-btn');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> جاري الإرسال...';
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/request-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    phoneCodeHash = data.phone_code_hash;
+                    currentPhone = phone;
+                    document.getElementById('phone-step').style.display = 'none';
+                    document.getElementById('code-step').style.display = 'block';
+                    showMessage('login-message', data.message, 'success');
+                } else {
+                    showMessage('login-message', data.message, 'error');
+                }
+            } catch (e) {
+                showMessage('login-message', 'خطأ في الاتصال', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'إرسال رمز التحقق';
+        }
+
+        async function verifyCode() {
+            const code = getCode();
+            const businessName = document.getElementById('business-name-input').value;
+            const businessCity = document.getElementById('business-city-input').value;
+            const btn = document.getElementById('verify-code-btn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> جاري التحقق...';
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/verify-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone: currentPhone,
+                        code,
+                        phone_code_hash: phoneCodeHash,
+                        business_name: businessName,
+                        business_city: businessCity
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    businessId = data.business_id;
+                    localStorage.setItem('businessId', businessId);
+                    showDashboard();
+                } else {
+                    showMessage('login-message', data.message, 'error');
+                }
+            } catch (e) {
+                showMessage('login-message', 'خطأ في الاتصال', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'تأكيد وتسجيل الدخول';
+        }
+
+        function showMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => el.innerHTML = '', 5000);
+        }
+
+        // Dashboard
+        async function showDashboard() {
+            showScreen('dashboard-screen');
+            document.getElementById('bottom-nav').style.display = 'flex';
+            document.getElementById('login-screen').style.display = 'none';
+            
+            await loadBusinessData();
+            await loadBotStatus();
+            await loadProducts();
+        }
+
+        async function loadBusinessData() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/me?business_id=${businessId}`);
+                const data = await res.json();
+                document.getElementById('welcome-name').textContent = `مرحباً، ${data.name}`;
+                document.getElementById('settings-name').value = data.name;
+                document.getElementById('settings-city').value = data.city || '';
+            } catch (e) {
+                console.error('Error loading business data:', e);
+            }
+        }
+
+        async function loadBotStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/business/status/${businessId}`);
+                const data = await res.json();
+                botRunning = data.running;
+                updateBotUI();
+            } catch (e) {
+                console.error('Error loading bot status:', e);
+            }
+        }
+
+        function updateBotUI() {
+            const dot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const botIcon = document.getElementById('bot-icon');
+            const botStatusText = document.getElementById('bot-status-text');
+            const botStatusDesc = document.getElementById('bot-status-desc');
+            const toggleBtn = document.getElementById('toggle-bot-btn');
+
+            if (botRunning) {
+                dot.classList.add('active');
+                statusText.textContent = 'يعمل';
+                botIcon.classList.add('running');
+                botStatusText.textContent = 'البوت يعمل الآن! 🟢';
+                botStatusDesc.textContent = 'البوت يرد على رسائل الزبائن تلقائياً';
+                toggleBtn.className = 'btn btn-danger';
+                toggleBtn.innerHTML = '🛑 إيقاف البوت';
+            } else {
+                dot.classList.remove('active');
+                statusText.textContent = 'متوقف';
+                botIcon.classList.remove('running');
+                botStatusText.textContent = 'البوت متوقف';
+                botStatusDesc.textContent = 'اضغط الزر لتشغيل البوت والبدء بالرد على الزبائن';
+                toggleBtn.className = 'btn btn-success';
+                toggleBtn.innerHTML = '🚀 تشغيل البوت';
+            }
+        }
+
+        async function toggleBot() {
+            const btn = document.getElementById('toggle-bot-btn');
+            const endpoint = botRunning ? 'stop' : 'start';
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                const res = await fetch(`${API_BASE}/business/${endpoint}/${businessId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    botRunning = !botRunning;
+                    updateBotUI();
+                }
+            } catch (e) {
+                console.error('Error toggling bot:', e);
+            }
+
+            btn.disabled = false;
+            updateBotUI();
+        }
+
+        // Products
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/business/products/${businessId}`);
+                const products = await res.json();
+                
+                document.getElementById('products-count').textContent = products.length;
+                
+                const listEl = document.getElementById('products-list');
+                if (products.length === 0) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📦</div>
+                            <p>لا توجد منتجات بعد</p>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML = products.map(p => `
+                        <div class="product-item">
+                            <span class="product-name">${p.name}</span>
+                            <span class="product-price">${p.price ? p.price.toLocaleString() + ' د.ع' : '-'}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Error loading products:', e);
+            }
+        }
+
+        function openAddProductModal() {
+            document.getElementById('add-product-modal').classList.add('active');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('add-product-modal').classList.remove('active');
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('product-name').value;
+            const description = document.getElementById('product-description').value;
+            const price = parseFloat(document.getElementById('product-price').value) || null;
+
+            try {
+                const res = await fetch(`${API_BASE}/business/products/${businessId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description, price })
+                });
+
+                if (res.ok) {
+                    closeAddProductModal();
+                    await loadProducts();
+                    // Clear form
+                    document.getElementById('product-name').value = '';
+                    document.getElementById('product-description').value = '';
+                    document.getElementById('product-price').value = '';
+                }
+            } catch (e) {
+                console.error('Error adding product:', e);
+            }
+        }
+
+        // Settings
+        async function saveSettings() {
+            const name = document.getElementById('settings-name').value;
+            const city = document.getElementById('settings-city').value;
+
+            try {
+                await fetch(`${API_BASE}/business/config/${businessId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, city })
+                });
+                alert('تم حفظ الإعدادات');
+            } catch (e) {
+                console.error('Error saving settings:', e);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('businessId');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

@@ -88,6 +88,29 @@ muntazir/
 | `/api/products` | GET | List all products |
 | `/api/config` | GET/PUT | Business configuration |
 | `/api/health` | GET | Health check |
+| `/api/webhook/telegram` | POST | Telegram bot webhook |
+| `/api/webhook/whatsapp` | POST | WhatsApp (Twilio) webhook |
+| `/api/webhook/facebook` | POST | Facebook Messenger webhook |
+
+## 🔌 Platform Integration
+
+### Telegram Bot Setup
+1. Create a bot via [@BotFather](https://t.me/BotFather)
+2. Add `TELEGRAM_BOT_TOKEN` to `.env`
+3. Set webhook:
+   ```bash
+   curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://YOUR_SERVER/api/webhook/telegram"
+   ```
+
+### WhatsApp (Twilio Sandbox)
+1. Get credentials from [Twilio Console](https://console.twilio.com)
+2. Add `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` to `.env`
+3. Configure Sandbox webhook URL: `https://YOUR_SERVER/api/webhook/whatsapp`
+
+### Facebook Messenger
+1. Create app at [Meta Developer](https://developers.facebook.com)
+2. Add `FACEBOOK_PAGE_TOKEN` to `.env`
+3. Configure webhook URL: `https://YOUR_SERVER/api/webhook/facebook`
 
 ## 🌐 Iraqi Arabic Examples
 
@@ -106,6 +129,14 @@ Muntazir: صدقني حجي هذا أحسن سعر بالسوق...
 - [ ] **Phase 2**: Platform Integration (Facebook, WhatsApp)
 - [ ] **Phase 3**: Stealth & Reliability
 - [ ] **Phase 4**: Multi-Tenancy & Dashboard
+
+## 🔧 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `403 API key was reported as leaked` | Generate a new key at [Google AI Studio](https://aistudio.google.com/app/apikey) and update `.env` |
+| `400 API_KEY_INVALID` / `API key expired` | Replace API key in `.env` and restart server |
+| `FutureWarning: google.generativeai deprecated` | Cosmetic warning only; migration to `google.genai` planned |
 
 ## 📜 License
 

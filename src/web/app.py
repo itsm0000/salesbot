@@ -7,10 +7,12 @@ import os
 import json
 from pathlib import Path
 from typing import Optional
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -20,6 +22,11 @@ load_dotenv()
 # Import core modules
 from ..core.brain import Brain
 from ..core.personality import PersonalityConfig
+
+# Import backend modules
+from ..backend.database import init_db, async_session
+from ..backend.bot_manager import bot_manager
+from ..backend.routes import auth, business
 
 
 # Paths
@@ -52,22 +59,20 @@ class ConfigUpdateRequest(BaseModel):
     config: dict
 
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Muntazir - Iraqi Sales AI",
-    description="منتظر - وكيل مبيعات عراقي ذكي",
-    version="0.1.0",
-)
-
-# Global brain instance (initialized on startup)
+# Global brain instance (for testing interface)
 brain: Optional[Brain] = None
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the Brain on startup"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events"""
     global brain
     
+    # Startup: Initialize database
+    await init_db()
+    print("✅ Database initialized")
+    
+    # Initialize Brain for testing interface
     products_path = str(DATA_DIR / "products.csv")
     config_path = str(CONFIG_DIR / "business_config.json")
     
@@ -76,10 +81,44 @@ async def startup_event():
             products_path=products_path,
             business_config_path=config_path,
         )
-        print("Brain initialized successfully")
+        print("✅ Brain initialized")
     except Exception as e:
-        print(f"Error initializing Brain: {e}")
-        raise
+        print(f"⚠️ Brain init warning: {e}")
+    
+    # Start bot manager workers
+    await bot_manager.start_workers(3)
+    
+    # Start bots for all active businesses
+    async with async_session() as session:
+        await bot_manager.start_all_from_db(session)
+    
+    yield
+    
+    # Shutdown: Stop all bots
+    await bot_manager.stop_all()
+    print("👋 Shutting down")
+
+
+# Initialize FastAPI app with lifespan
+app = FastAPI(
+    title="Muntazir - Iraqi Sales AI",
+    description="منتظر - وكيل مبيعات عراقي ذكي",
+    version="0.2.0",
+    lifespan=lifespan,
+)
+
+# CORS for PWA frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict to your domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include backend routers
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+app.include_router(business.router, prefix="/business", tags=["Business"])
 
 
 # Mount static files
@@ -92,6 +131,15 @@ async def serve_index():
     return HTMLResponse("<h1>Muntazir - Interface Loading...</h1>")
 
 
+@app.get("/dashboard", response_class=HTMLResponse)
+async def serve_dashboard():
+    """Serve the business owner dashboard"""
+    dashboard_path = STATIC_DIR / "dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(dashboard_path)
+    return HTMLResponse("<h1>Dashboard Loading...</h1>")
+
+
 @app.get("/styles.css")
 async def serve_styles():
     """Serve CSS file"""
@@ -100,35 +148,8 @@ async def serve_styles():
         return FileResponse(css_path, media_type="text/css")
     return ""
 
-
 # API Endpoints
-@app.post("/api/webhook/{platform}")
-async def webhook(platform: str, request: Request):
-    """Unified webhook handler for all platforms"""
-    adapter = AdapterFactory.get_adapter(platform)
-    if not adapter:
-        raise HTTPException(status_code=404, detail=f"Platform '{platform}' not supported or configured")
 
-    # Handle different content types (Twilio uses Form data, Telegram uses JSON)
-    try:
-        content_type = request.headers.get("content-type", "")
-        if "application/json" in content_type:
-            data = await request.json()
-        elif "application/x-www-form-urlencoded" in content_type:
-            data = await request.form()
-        else:
-            # Fallback or try json
-            data = await request.json()
-    except Exception:
-         # Some hooks might get messy, try simple fallback
-         try:
-             data = await request.body()
-         except:
-             raise HTTPException(status_code=400, detail="Invalid Request Data")
-
-    # 1. Parse normalize message
-    parsed_msg = adapter.parse_request(data)
-    
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Process a chat message and return AI response"""
