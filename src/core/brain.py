@@ -136,24 +136,14 @@ class Brain:
         personality_context = self.personality.get_system_context()
         
         # Audience settings from config or defaults
-        target_audience = self.business_config.get("target_audience", "عام")
+        target_audience = self.business_config.get("target_audience", "عام (تعامل مع الجميع بلطف واحترام)")
         default_honorific = business.get("default_honorific", personality_context["default_honorific"])
         
-        # Determine male/female default honorifics based on audience
-        # If user sets "Captain", we use it. Otherwise fallbacks.
-        honorific_male = default_honorific
-        if "كابتن" in default_honorific:
-             honorific_female = "كابتن" # Captain works for both in sports context often
-        else:
-             honorific_female = "اختي" # Default safe female fallback
-             
         return SYSTEM_PROMPT_TEMPLATE.format(
             business_name=business.get("name", personality_context["business_name"]),
             city=business.get("city", personality_context["city"]),
             sales_goal=sales_goals.get("primary", "بيع المنتجات وخدمة الزباين"),
             default_honorific=default_honorific,
-            honorific_male=honorific_male,
-            honorific_female=self.business_config.get("honorific_female", "اختي"),
             customer_name=customer_name,
             target_audience=target_audience,
             mood="ودود ومحترم", # Can be dynamic later
