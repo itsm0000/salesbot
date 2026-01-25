@@ -28,11 +28,32 @@ class Base(DeclarativeBase):
     pass
 
 
+class Operator(Base):
+    """Operator / Super-user who controls multiple bots"""
+    __tablename__ = "operators"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(256))  # For dashboard login
+    
+    # Status
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    businesses: Mapped[list["Business"]] = relationship(back_populates="operator", cascade="all, delete-orphan")
+
+
 class Business(Base):
-    """Business owner / sales bot user"""
+    """Business / sales bot instance controlled by an operator"""
     __tablename__ = "businesses"
     
     id: Mapped[int] = mapped_column(primary_key=True)
+    operator_id: Mapped[Optional[int]] = mapped_column(ForeignKey("operators.id"))  # Who controls this bot
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     city: Mapped[Optional[str]] = mapped_column(String(100))
@@ -56,8 +77,38 @@ class Business(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    operator: Mapped[Optional["Operator"]] = relationship(back_populates="businesses")
     products: Mapped[list["Product"]] = relationship(back_populates="business", cascade="all, delete-orphan")
     conversations: Mapped[list["Conversation"]] = relationship(back_populates="business", cascade="all, delete-orphan")
+    bot_memory: Mapped[Optional["BotMemory"]] = relationship(back_populates="business", uselist=False, cascade="all, delete-orphan")
+
+
+class BotMemory(Base):
+    """Persistent memory and persona configuration for a bot"""
+    __tablename__ = "bot_memories"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    business_id: Mapped[int] = mapped_column(ForeignKey("businesses.id"), unique=True, nullable=False)
+    
+    # Persona configuration
+    persona_name: Mapped[Optional[str]] = mapped_column(String(100))  # e.g., "Abu Ahmed"
+    persona_prompt: Mapped[Optional[str]] = mapped_column(Text)  # Custom system prompt
+    tone: Mapped[str] = mapped_column(String(50), default="friendly")  # "formal", "casual", "iraqi"
+    
+    # Permanent memory (facts to always remember)
+    permanent_memory: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
+    
+    # Business policies
+    max_discount_percent: Mapped[int] = mapped_column(Integer, default=10)
+    shipping_baghdad: Mapped[int] = mapped_column(Integer, default=5000)
+    shipping_other: Mapped[int] = mapped_column(Integer, default=10000)
+    
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    business: Mapped["Business"] = relationship(back_populates="bot_memory")
 
 
 class Product(Base):

@@ -26,7 +26,7 @@ from ..core.personality import PersonalityConfig
 # Import backend modules
 from ..backend.database import init_db, async_session
 from ..backend.bot_manager import bot_manager
-from ..backend.routes import auth, business
+from ..backend.routes import auth, business, operator
 
 
 # Paths
