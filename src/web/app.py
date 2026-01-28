@@ -119,6 +119,7 @@ app.add_middleware(
 # Include backend routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(business.router, prefix="/business", tags=["Business"])
+app.include_router(operator.router, tags=["Operator"])  # Multi-bot management API
 
 
 # Mount static files
@@ -138,6 +139,15 @@ async def serve_dashboard():
     if dashboard_path.exists():
         return FileResponse(dashboard_path)
     return HTMLResponse("<h1>Dashboard Loading...</h1>")
+
+
+@app.get("/operator", response_class=HTMLResponse)
+async def serve_operator_dashboard():
+    """Serve the multi-bot operator dashboard"""
+    operator_path = STATIC_DIR / "operator_dashboard.html"
+    if operator_path.exists():
+        return FileResponse(operator_path)
+    return HTMLResponse("<h1>Operator Dashboard Loading...</h1>")
 
 
 @app.get("/styles.css")
@@ -270,9 +280,54 @@ async def clear_conversation(customer_id: str):
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
+    """Comprehensive health check endpoint for monitoring and Docker"""
+    import psutil
+    from datetime import datetime
+    
+    health = {
         "status": "healthy",
-        "brain_initialized": brain is not None,
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0",
+        "checks": {}
+    }
+    
+    # Check 1: Brain initialization
+    health["checks"]["brain"] = {
+        "status": "ok" if brain else "error",
         "products_loaded": len(brain.knowledge.products) if brain else 0,
     }
+    if not brain:
+        health["status"] = "degraded"
+    
+    # Check 2: Database connectivity
+    try:
+        async with async_session() as session:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+        health["checks"]["database"] = {"status": "ok"}
+    except Exception as e:
+        health["checks"]["database"] = {"status": "error", "message": str(e)}
+        health["status"] = "unhealthy"
+    
+    # Check 3: Bot manager status
+    active_bots = len(bot_manager._bots)
+    worker_status = "running" if bot_manager._workers else "stopped"
+    health["checks"]["bot_manager"] = {
+        "status": "ok" if worker_status == "running" else "warning",
+        "active_bots": active_bots,
+        "workers": worker_status,
+    }
+    
+    # Check 4: System resources
+    try:
+        memory = psutil.virtual_memory()
+        health["checks"]["system"] = {
+            "status": "ok" if memory.percent < 90 else "warning",
+            "memory_percent": round(memory.percent, 1),
+            "cpu_percent": round(psutil.cpu_percent(interval=0.1), 1),
+        }
+    except:
+        health["checks"]["system"] = {"status": "unknown"}
+    
+    return health
+

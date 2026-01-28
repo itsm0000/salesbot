@@ -121,6 +121,7 @@ async def operator_register(data: OperatorCreate):
         return {
             "success": True,
             "operator_id": operator.id,
+            "name": operator.name,
             "message": "Operator account created"
         }
 
@@ -356,9 +357,10 @@ async def message_stream(bot_id: int):
                 
                 for msg in messages:
                     conv = await session.get(Conversation, msg.conversation_id)
+                    direction = "incoming" if msg.role == "user" else "outgoing"
                     data = {
                         "id": msg.id,
-                        "role": msg.role,
+                        "direction": direction,
                         "content": msg.content,
                         "timestamp": msg.timestamp.isoformat(),
                         "customer_name": conv.customer_name if conv else "Unknown"

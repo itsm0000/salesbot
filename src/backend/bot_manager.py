@@ -45,8 +45,8 @@ class BotManager:
         self._data_dir = Path(__file__).parent.parent.parent / "data"
         self._config_dir = Path(__file__).parent.parent.parent / "config"
     
-    def _create_brain_for_business(self, business_config: Dict[str, Any]) -> Brain:
-        """Create a Brain instance with business-specific config"""
+    def _create_brain_for_business(self, business_config: Dict[str, Any], bot_memory: Optional[Dict[str, Any]] = None) -> Brain:
+        """Create a Brain instance with business-specific config and memory"""
         products_path = str(self._data_dir / "products.csv")
         config_path = str(self._config_dir / "business_config.json")
         
@@ -58,9 +58,15 @@ class BotManager:
         # Override with business-specific settings if provided
         if business_config:
             if business_config.get('business_name'):
-                brain.business_name = business_config['business_name']
+                brain.business_config.setdefault("business", {})["name"] = business_config['business_name']
             if business_config.get('business_city'):
-                brain.business_city = business_config['business_city']
+                brain.business_config.setdefault("business", {})["city"] = business_config['business_city']
+            if business_config.get('target_audience'):
+                brain.business_config["target_audience"] = business_config['target_audience']
+        
+        # Apply BotMemory configuration if provided
+        if bot_memory:
+            brain.update_from_memory(bot_memory)
         
         return brain
     
@@ -68,7 +74,8 @@ class BotManager:
         self,
         business_id: int,
         session_string: str,
-        business_config: Optional[Dict[str, Any]] = None
+        business_config: Optional[Dict[str, Any]] = None,
+        bot_memory: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
         Start a bot instance for a specific business.
@@ -101,8 +108,8 @@ class BotManager:
             
             me = await client.get_me()
             
-            # Create Brain for this business
-            brain = self._create_brain_for_business(business_config or {})
+            # Create Brain for this business with memory config
+            brain = self._create_brain_for_business(business_config or {}, bot_memory)
             
             # Create bot instance
             bot = BusinessBot(
@@ -305,12 +312,15 @@ class BotManager:
         Start bots for all active businesses from database.
         Called on server startup.
         """
-        from .database import Business
+        from .database import Business, BotMemory as BotMemoryModel
         from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
         
-        # Get all active businesses with sessions
+        # Get all active businesses with sessions and their memory
         result = await db_session.execute(
-            select(Business).where(
+            select(Business)
+            .options(selectinload(Business.bot_memory))
+            .where(
                 Business.is_active == True,
                 Business.session_string != None
             )
@@ -323,12 +333,27 @@ class BotManager:
             config = {
                 'business_name': business.name,
                 'business_city': business.city,
+                'target_audience': business.target_audience,
             }
+            
+            # Load BotMemory config if available
+            memory = None
+            if business.bot_memory:
+                memory = {
+                    'persona_name': business.bot_memory.persona_name,
+                    'persona_prompt': business.bot_memory.persona_prompt,
+                    'tone': business.bot_memory.tone,
+                    'permanent_memory': business.bot_memory.permanent_memory,
+                    'max_discount_percent': business.bot_memory.max_discount_percent,
+                    'shipping_baghdad': business.bot_memory.shipping_baghdad,
+                    'shipping_other': business.bot_memory.shipping_other,
+                }
             
             await self.start_for_business(
                 business.id,
                 business.session_string,
-                config
+                config,
+                memory
             )
         
         # Start workers

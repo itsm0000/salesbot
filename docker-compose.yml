@@ -1,21 +1,57 @@
-version: '3.8'
+# =============================================================================
+# Muntazir Sales Bot - Production Docker Compose
+# =============================================================================
 
 services:
   muntazir:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: salesbot-muntazir:latest
     container_name: muntazir_bot
-    restart: always
+    restart: unless-stopped
+
     ports:
       - "8000:8000"
+
     env_file:
       - .env
+
+    environment:
+      - DATABASE_PATH=/app/data/muntazir.db
+      - LOG_LEVEL=INFO
+
     volumes:
-      # Mount data and config for persistence/hot-reloading if needed
+      # Persist database and configuration
       - ./data:/app/data
       - ./config:/app/config
-      # Mount logs if we had them
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+
+    # Resource limits (adjust based on VM specs)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/api/health" ]
       interval: 30s
       timeout: 10s
+      start_period: 10s
       retries: 3
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Networks (optional, for future services like Redis)
+networks:
+  default:
+    name: muntazir_network

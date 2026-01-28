@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>منتظر | لوحة تحكم المشغل</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --bg-elevated: #334155;
+            --accent-primary: #f59e0b;
+            --accent-secondary: #fbbf24;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.1);
+            --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            --gradient-dark: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.3);
+            --font-arabic: 'IBM Plex Sans Arabic', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-arabic);
+            background: var(--gradient-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .operator-name {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Login Screen */
+        .login-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+        }
+
+        .login-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-gold);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            width: auto;
+        }
+
+        /* Bot Grid */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .bots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .bot-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .bot-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .bot-card.active {
+            border-color: var(--success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .bot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .bot-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .bot-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: var(--bg-elevated);
+        }
+
+        .bot-status.running {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .bot-status.stopped {
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-dot.running {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .bot-meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .bot-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bot-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Bot Detail Panel */
+        .detail-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .detail-panel.active {
+            display: flex;
+        }
+
+        .detail-content {
+            background: var(--bg-secondary);
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            border-radius: 24px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .detail-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .detail-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-title h2 {
+            font-size: 1.25rem;
+        }
+
+        .close-btn {
+            background: var(--bg-elevated);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--error);
+        }
+
+        .detail-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Messages Feed */
+        .messages-section {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 768px) {
+            .messages-section {
+                grid-column: span 1;
+            }
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .messages-feed {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .message-row {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            background: var(--bg-elevated);
+        }
+
+        .message-row.incoming {
+            border-right: 3px solid var(--accent-primary);
+        }
+
+        .message-row.outgoing {
+            border-right: 3px solid var(--success);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .message-content {
+            font-size: 0.875rem;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: var(--success);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1s infinite;
+        }
+
+        /* Control Card */
+        .control-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Create Bot Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--accent-primary);
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">منتظر | المشغل</div>
+        <div class="header-actions">
+            <span class="operator-name" id="operator-name"></span>
+            <button class="btn btn-secondary btn-sm" onclick="logout()">خروج</button>
+        </div>
+    </header>
+
+    <!-- Login Screen -->
+    <div class="screen active" id="login-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-icon">🎛️</div>
+                <h1 class="login-title">لوحة تحكم المشغل</h1>
+                <p class="login-subtitle">سجل دخولك لإدارة جميع البوتات</p>
+
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-input" id="login-phone" placeholder="+964 XXX XXX XXXX" dir="ltr">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-input" id="login-password" placeholder="••••••••">
+                </div>
+
+                <button class="btn btn-primary" id="login-btn" onclick="login()">
+                    تسجيل الدخول
+                </button>
+
+                <div id="login-message" style="margin-top: 16px;"></div>
+
+                <p style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 0.875rem;">
+                    ليس لديك حساب؟ <a href="#" onclick="showRegister()" style="color: var(--accent-primary);">إنشاء حساب</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div class="screen" id="register-screen">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-icon">📝</div>
+                <h1 class="login-title">إنشاء حساب مشغل</h1>
+                <p class="login-subtitle">سجل لتبدأ إدارة البوتات</p>
+
+                <div class="form-group">
+                    <label class="form-label">الاسم الكامل</label>
+                    <input type="text" class="form-input" id="register-name" placeholder="مثال: أحمد محمد">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-input" id="register-phone" placeholder="+964 XXX XXX XXXX" dir="ltr">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-input" id="register-password" placeholder="••••••••">
+                </div>
+
+                <button class="btn btn-primary" onclick="register()">
+                    إنشاء الحساب
+                </button>
+
+                <div id="register-message" style="margin-top: 16px;"></div>
+
+                <p style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 0.875rem;">
+                    لديك حساب؟ <a href="#" onclick="showLogin()" style="color: var(--accent-primary);">تسجيل الدخول</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div class="screen" id="dashboard-screen">
+        <div class="page-header">
+            <h1 class="page-title">🤖 البوتات</h1>
+            <button class="btn btn-primary btn-sm" onclick="openCreateBotModal()">
+                + إضافة بوت جديد
+            </button>
+        </div>
+
+        <div class="bots-grid" id="bots-grid">
+            <!-- Bots will be loaded here -->
+        </div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">🤖</div>
+            <div class="empty-title">لا توجد بوتات بعد</div>
+            <p>أضف أول بوت لتبدأ إدارة عملك</p>
+            <button class="btn btn-primary" style="max-width: 200px; margin: 24px auto 0;" onclick="openCreateBotModal()">
+                + إضافة بوت
+            </button>
+        </div>
+    </div>
+
+    <!-- Bot Detail Panel -->
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-content">
+            <div class="detail-header">
+                <div class="detail-title">
+                    <span id="detail-status-dot" class="status-dot"></span>
+                    <h2 id="detail-bot-name">اسم البوت</h2>
+                </div>
+                <button class="close-btn" onclick="closeDetailPanel()">✕</button>
+            </div>
+
+            <div class="detail-body">
+                <div class="detail-grid">
+                    <!-- Controls -->
+                    <div class="control-card">
+                        <div class="section-title">⚡ التحكم</div>
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                            <button class="btn btn-success btn-sm" id="start-bot-btn" onclick="startBot()">
+                                🚀 تشغيل
+                            </button>
+                            <button class="btn btn-danger btn-sm" id="stop-bot-btn" onclick="stopBot()">
+                                ⏹️ إيقاف
+                            </button>
+                        </div>
+                        <div id="bot-detail-stats">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                                <span id="detail-city">المدينة</span> • 
+                                <span id="detail-type">نوع العمل</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="control-card">
+                        <div class="section-title">🛠️ إجراءات سريعة</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="openMemoryEditor()">
+                                🧠 تعديل الذاكرة والشخصية
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="openProductsEditor()">
+                                📦 إدارة المنتجات
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Feed -->
+                    <div class="messages-section">
+                        <div class="section-title">
+                            💬 الرسائل المباشرة
+                            <span class="live-indicator">
+                                <span class="live-dot"></span>
+                                مباشر
+                            </span>
+                        </div>
+                        <div class="messages-feed" id="messages-feed">
+                            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                الرسائل ستظهر هنا عند تشغيل البوت
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Bot Modal -->
+    <div class="modal-overlay" id="create-bot-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">إضافة بوت جديد</h3>
+                <button class="close-btn" onclick="closeCreateBotModal()">✕</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-step="1">1. التلغرام</button>
+                <button class="tab" data-step="2">2. المعلومات</button>
+                <button class="tab" data-step="3">3. الشخصية</button>
+            </div>
+
+            <!-- Step 1: Telegram -->
+            <div id="create-step-1">
+                <div class="form-group">
+                    <label class="form-label">رقم هاتف التلغرام للبوت</label>
+                    <input type="tel" class="form-input" id="new-bot-phone" placeholder="+964 XXX XXX XXXX" dir="ltr">
+                </div>
+                <button class="btn btn-primary" onclick="requestBotCode()">
+                    إرسال رمز التحقق
+                </button>
+
+                <div id="code-section" style="display: none; margin-top: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">رمز التحقق</label>
+                        <input type="text" class="form-input" id="new-bot-code" placeholder="12345" dir="ltr">
+                    </div>
+                    <button class="btn btn-primary" onclick="verifyBotCode()">
+                        تحقق وتابع
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Business Info -->
+            <div id="create-step-2" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">اسم العمل / المتجر</label>
+                    <input type="text" class="form-input" id="new-bot-name" placeholder="مثال: معرض النور">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" class="form-input" id="new-bot-city" placeholder="مثال: بغداد">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">نوع العمل</label>
+                    <input type="text" class="form-input" id="new-bot-type" placeholder="مثال: إلكترونيات">
+                </div>
+                <button class="btn btn-primary" onclick="goToStep3()">
+                    التالي
+                </button>
+            </div>
+
+            <!-- Step 3: Persona -->
+            <div id="create-step-3" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">اسم شخصية البوت</label>
+                    <input type="text" class="form-input" id="new-bot-persona" placeholder="مثال: أبو أحمد">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">أسلوب الكلام</label>
+                    <select class="form-input" id="new-bot-tone">
+                        <option value="iraqi">عراقي ودود</option>
+                        <option value="formal">رسمي</option>
+                        <option value="casual">غير رسمي</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الجمهور المستهدف</label>
+                    <input type="text" class="form-input" id="new-bot-audience" placeholder="مثال: شباب، تجار جملة">
+                </div>
+                <button class="btn btn-primary" onclick="createBot()">
+                    إنشاء البوت
+                </button>
+            </div>
+
+            <div id="create-message" style="margin-top: 16px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============ State ============
+        let operatorId = localStorage.getItem('operatorId');
+        let operatorName = localStorage.getItem('operatorName');
+        let currentBots = [];
+        let selectedBotId = null;
+        let messageEventSource = null;
+
+        // ============ API ============
+        const API_BASE = '/api/operator';
+
+        // ============ Init ============
+        document.addEventListener('DOMContentLoaded', () => {
+            if (operatorId) {
+                showDashboard();
+            }
+        });
+
+        // ============ Auth ============
+        async function login() {
+            const phone = document.getElementById('login-phone').value;
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> جاري الدخول...';
+
+            try {
+                const res = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    operatorId = data.operator_id;
+                    operatorName = data.name;
+                    localStorage.setItem('operatorId', operatorId);
+                    localStorage.setItem('operatorName', operatorName);
+                    showDashboard();
+                } else {
+                    showMessage('login-message', data.detail || 'خطأ في تسجيل الدخول', 'error');
+                }
+            } catch (e) {
+                showMessage('login-message', 'خطأ في الاتصال', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = 'تسجيل الدخول';
+        }
+
+        async function register() {
+            const name = document.getElementById('register-name').value;
+            const phone = document.getElementById('register-phone').value;
+            const password = document.getElementById('register-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, name, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    operatorId = data.operator_id;
+                    operatorName = data.name;
+                    localStorage.setItem('operatorId', operatorId);
+                    localStorage.setItem('operatorName', operatorName);
+                    showDashboard();
+                } else {
+                    showMessage('register-message', data.detail || 'خطأ في إنشاء الحساب', 'error');
+                }
+            } catch (e) {
+                showMessage('register-message', 'خطأ في الاتصال', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('operatorId');
+            localStorage.removeItem('operatorName');
+            location.reload();
+        }
+
+        function showLogin() {
+            showScreen('login-screen');
+        }
+
+        function showRegister() {
+            showScreen('register-screen');
+        }
+
+        // ============ Dashboard ============
+        async function showDashboard() {
+            showScreen('dashboard-screen');
+            document.getElementById('operator-name').textContent = operatorName;
+            document.querySelector('.header-actions').style.display = 'flex';
+            await loadBots();
+        }
+
+        async function loadBots() {
+            try {
+                const res = await fetch(`${API_BASE}/bots?operator_id=${operatorId}`);
+                const data = await res.json();
+                currentBots = data.bots || [];
+                renderBots();
+            } catch (e) {
+                console.error('Error loading bots:', e);
+            }
+        }
+
+        function renderBots() {
+            const grid = document.getElementById('bots-grid');
+            const empty = document.getElementById('empty-state');
+
+            if (currentBots.length === 0) {
+                grid.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            empty.style.display = 'none';
+
+            grid.innerHTML = currentBots.map(bot => `
+                <div class="bot-card ${bot.is_active ? 'active' : ''}" onclick="openBotDetail(${bot.id})">
+                    <div class="bot-header">
+                        <div class="bot-name">${bot.name}</div>
+                        <div class="bot-status ${bot.is_connected ? 'running' : 'stopped'}">
+                            <span class="status-dot ${bot.is_connected ? 'running' : ''}"></span>
+                            ${bot.is_connected ? 'متصل' : 'غير متصل'}
+                        </div>
+                    </div>
+                    <div class="bot-meta">
+                        <div class="bot-meta-item">📍 ${bot.city || 'غير محدد'}</div>
+                        <div class="bot-meta-item">🏪 ${bot.business_type || 'عام'}</div>
+                    </div>
+                    <div class="bot-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${bot.messages_today || 0}</div>
+                            <div class="stat-label">رسائل اليوم</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${bot.products_count || 0}</div>
+                            <div class="stat-label">منتج</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${bot.is_active ? '🟢' : '🔴'}</div>
+                            <div class="stat-label">الحالة</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============ Bot Detail ============
+        function openBotDetail(botId) {
+            selectedBotId = botId;
+            const bot = currentBots.find(b => b.id === botId);
+            if (!bot) return;
+
+            document.getElementById('detail-bot-name').textContent = bot.name;
+            document.getElementById('detail-city').textContent = bot.city || 'غير محدد';
+            document.getElementById('detail-type').textContent = bot.business_type || 'عام';
+            
+            const statusDot = document.getElementById('detail-status-dot');
+            statusDot.className = 'status-dot ' + (bot.is_connected ? 'running' : '');
+
+            document.getElementById('detail-panel').classList.add('active');
+
+            // Start SSE for messages
+            startMessageStream(botId);
+        }
+
+        function closeDetailPanel() {
+            document.getElementById('detail-panel').classList.remove('active');
+            selectedBotId = null;
+            stopMessageStream();
+        }
+
+        // ============ Bot Controls ============
+        async function startBot() {
+            if (!selectedBotId) return;
+            try {
+                const res = await fetch(`${API_BASE}/bots/${selectedBotId}/start`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    await loadBots();
+                    openBotDetail(selectedBotId);
+                }
+            } catch (e) {
+                console.error('Error starting bot:', e);
+            }
+        }
+
+        async function stopBot() {
+            if (!selectedBotId) return;
+            try {
+                const res = await fetch(`${API_BASE}/bots/${selectedBotId}/stop`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    await loadBots();
+                    openBotDetail(selectedBotId);
+                }
+            } catch (e) {
+                console.error('Error stopping bot:', e);
+            }
+        }
+
+        // ============ SSE Messages ============
+        function startMessageStream(botId) {
+            stopMessageStream();
+            
+            messageEventSource = new EventSource(`${API_BASE}/bots/${botId}/messages/stream`);
+            
+            messageEventSource.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                appendMessage(message);
+            };
+
+            messageEventSource.onerror = () => {
+                console.log('SSE connection error, reconnecting...');
+            };
+        }
+
+        function stopMessageStream() {
+            if (messageEventSource) {
+                messageEventSource.close();
+                messageEventSource = null;
+            }
+        }
+
+        function appendMessage(msg) {
+            const feed = document.getElementById('messages-feed');
+            const isIncoming = msg.direction === 'incoming';
+            
+            // Clear placeholder if exists
+            if (feed.querySelector('div[style*="text-align: center"]')) {
+                feed.innerHTML = '';
+            }
+
+            const msgEl = document.createElement('div');
+            msgEl.className = `message-row ${isIncoming ? 'incoming' : 'outgoing'}`;
+            msgEl.innerHTML = `
+                <div class="message-header">
+                    <span>${isIncoming ? '📩 وارد' : '📤 صادر'}</span>
+                    <span>${new Date(msg.timestamp).toLocaleTimeString('ar-IQ')}</span>
+                </div>
+                <div class="message-content">${msg.content}</div>
+            `;
+
+            feed.appendChild(msgEl);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        // ============ Create Bot Modal ============
+        let createBotData = {};
+
+        function openCreateBotModal() {
+            document.getElementById('create-bot-modal').classList.add('active');
+            createBotData = {};
+        }
+
+        function closeCreateBotModal() {
+            document.getElementById('create-bot-modal').classList.remove('active');
+        }
+
+        async function requestBotCode() {
+            const phone = document.getElementById('new-bot-phone').value;
+            createBotData.phone = phone;
+
+            try {
+                const res = await fetch('/auth/request-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    createBotData.phone_code_hash = data.phone_code_hash;
+                    document.getElementById('code-section').style.display = 'block';
+                    showMessage('create-message', 'تم إرسال الرمز', 'success');
+                } else {
+                    showMessage('create-message', data.message || 'خطأ', 'error');
+                }
+            } catch (e) {
+                showMessage('create-message', 'خطأ في الاتصال', 'error');
+            }
+        }
+
+        async function verifyBotCode() {
+            const code = document.getElementById('new-bot-code').value;
+            createBotData.code = code;
+            goToStep2();
+        }
+
+        function goToStep2() {
+            document.getElementById('create-step-1').style.display = 'none';
+            document.getElementById('create-step-2').style.display = 'block';
+            updateTabs(2);
+        }
+
+        function goToStep3() {
+            createBotData.name = document.getElementById('new-bot-name').value;
+            createBotData.city = document.getElementById('new-bot-city').value;
+            createBotData.business_type = document.getElementById('new-bot-type').value;
+
+            document.getElementById('create-step-2').style.display = 'none';
+            document.getElementById('create-step-3').style.display = 'block';
+            updateTabs(3);
+        }
+
+        function updateTabs(step) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-step="${step}"]`).classList.add('active');
+        }
+
+        async function createBot() {
+            createBotData.persona_name = document.getElementById('new-bot-persona').value;
+            createBotData.tone = document.getElementById('new-bot-tone').value;
+            createBotData.target_audience = document.getElementById('new-bot-audience').value;
+            createBotData.operator_id = operatorId;
+
+            try {
+                const res = await fetch(`${API_BASE}/bots`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(createBotData)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    closeCreateBotModal();
+                    await loadBots();
+                } else {
+                    showMessage('create-message', data.detail || 'خطأ في إنشاء البوت', 'error');
+                }
+            } catch (e) {
+                showMessage('create-message', 'خطأ في الاتصال', 'error');
+            }
+        }
+
+        // ============ Placeholders ============
+        function openMemoryEditor() {
+            alert('قريباً: محرر الذاكرة والشخصية');
+        }
+
+        function openProductsEditor() {
+            // Redirect to old dashboard products for now
+            window.open(`/dashboard?business_id=${selectedBotId}`, '_blank');
+        }
+
+        // ============ Utilities ============
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            // Hide header actions on login/register
+            const actions = document.querySelector('.header-actions');
+            if (screenId === 'login-screen' || screenId === 'register-screen') {
+                actions.style.display = 'none';
+            }
+        }
+
+        function showMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => el.innerHTML = '', 5000);
+        }
+    </script>
+</body>
+
+</html>

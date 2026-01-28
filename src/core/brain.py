@@ -103,6 +103,57 @@ class Brain:
         
         # Active conversations
         self.conversations: Dict[str, ConversationContext] = {}
+        
+        # Custom persona prompt (if set, overrides template)
+        self.custom_persona_prompt: Optional[str] = None
+
+    def update_from_memory(self, memory_config: Dict[str, Any]) -> None:
+        """
+        Update Brain configuration from BotMemory database model.
+        
+        Args:
+            memory_config: Dict with keys:
+                - persona_name: Custom bot persona name
+                - persona_prompt: Custom system prompt (overrides template)
+                - tone: 'iraqi', 'formal', 'casual'
+                - permanent_memory: Dict of facts to always remember
+                - max_discount_percent: Max negotiation discount
+                - shipping_baghdad: Shipping cost to Baghdad
+                - shipping_other: Shipping cost to other cities
+        """
+        if not memory_config:
+            return
+            
+        # Update business config with memory settings
+        if "max_discount_percent" in memory_config:
+            self.business_config.setdefault("policies", {}).setdefault("discounts", {})
+            self.business_config["policies"]["discounts"]["max_discount_percent"] = memory_config["max_discount_percent"]
+            
+        if "shipping_baghdad" in memory_config:
+            self.business_config.setdefault("policies", {}).setdefault("shipping", {})
+            self.business_config["policies"]["shipping"]["baghdad"] = memory_config["shipping_baghdad"]
+            
+        if "shipping_other" in memory_config:
+            self.business_config.setdefault("policies", {}).setdefault("shipping", {})
+            self.business_config["policies"]["shipping"]["other_cities"] = memory_config["shipping_other"]
+            
+        if "persona_name" in memory_config and memory_config["persona_name"]:
+            self.business_config.setdefault("business", {})
+            self.business_config["business"]["default_honorific"] = memory_config["persona_name"]
+            
+        if "tone" in memory_config:
+            # Map tone to target_audience style hints
+            tone_mapping = {
+                "iraqi": "عراقيين - استخدم اللهجة العراقية الأصيلة مع الألفة والود",
+                "formal": "عملاء رسميين - استخدم أسلوب محترم ورسمي",
+                "casual": "شباب - استخدم أسلوب غير رسمي ومريح"
+            }
+            if memory_config["tone"] in tone_mapping:
+                self.business_config["target_audience"] = tone_mapping[memory_config["tone"]]
+                
+        # Store custom persona prompt if provided
+        if "persona_prompt" in memory_config and memory_config["persona_prompt"]:
+            self.custom_persona_prompt = memory_config["persona_prompt"]
 
     def _load_business_config(self, config_path: Optional[str]) -> dict:
         """Load business configuration from JSON"""
@@ -127,6 +178,13 @@ class Brain:
 
     def _build_system_prompt(self, customer_name: str = "الزبون") -> str:
         """Build the system prompt with current context"""
+        # If custom persona prompt is set, use it directly
+        if self.custom_persona_prompt:
+            return self.custom_persona_prompt.format(
+                customer_name=customer_name,
+                product_summary=self.knowledge.get_product_summary(),
+            )
+        
         business = self.business_config.get("business", {})
         policies = self.business_config.get("policies", {})
         shipping = policies.get("shipping", {})

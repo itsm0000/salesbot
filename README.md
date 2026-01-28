@@ -79,15 +79,29 @@ muntazir/
 - ✅ Confidence scoring
 - ✅ Conversation history
 
+## 🏢 Multi-Tenant Dashboard (Phase 4)
+
+- ✅ Operator login/registration with password auth
+- ✅ Multi-bot grid view with status monitoring
+- ✅ Real-time message streaming (SSE)
+- ✅ Start/Stop bot controls
+- ✅ Custom persona & memory configuration per bot
+- ✅ Create new bot wizard (3-step flow)
+
+**Access**: Navigate to `/operator` for the operator dashboard.
+
 ## 📞 API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | Web interface |
+| `/dashboard` | GET | Business owner dashboard |
+| `/operator` | GET | **NEW** Multi-bot operator dashboard |
 | `/api/chat` | POST | Process customer message |
 | `/api/products` | GET | List all products |
 | `/api/config` | GET/PUT | Business configuration |
 | `/api/health` | GET | Health check |
+| `/api/operator/*` | Various | **NEW** Operator API endpoints |
 | `/api/webhook/telegram` | POST | Telegram bot webhook |
 | `/api/webhook/whatsapp` | POST | WhatsApp (Twilio) webhook |
 | `/api/webhook/facebook` | POST | Facebook Messenger webhook |
@@ -125,10 +139,10 @@ Muntazir: صدقني حجي هذا أحسن سعر بالسوق...
 ## 📋 Roadmap
 
 - [x] **Phase 0**: Foundation & Manual Interface
-- [ ] **Phase 1**: Core Intelligence & Training
+- [x] **Phase 1**: Core Intelligence & Training
 - [ ] **Phase 2**: Platform Integration (Facebook, WhatsApp)
 - [ ] **Phase 3**: Stealth & Reliability
-- [ ] **Phase 4**: Multi-Tenancy & Dashboard
+- [x] **Phase 4**: Multi-Tenancy & Operator Dashboard
 
 ## 🔧 Troubleshooting
 
