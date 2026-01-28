@@ -310,7 +310,7 @@ async def health_check():
         health["status"] = "unhealthy"
     
     # Check 3: Bot manager status
-    active_bots = len(bot_manager._bots)
+    active_bots = len(bot_manager.bots)
     worker_status = "running" if bot_manager._workers else "stopped"
     health["checks"]["bot_manager"] = {
         "status": "ok" if worker_status == "running" else "warning",
