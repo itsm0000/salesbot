@@ -95,16 +95,9 @@ log_step "Step 4: Stop Existing Containers"
 docker compose down --remove-orphans 2>/dev/null || docker-compose down --remove-orphans 2>/dev/null || true
 log_success "Containers stopped"
 
-# Step 5: Run database migrations
+# Step 5: Note about migrations
 log_step "Step 5: Database Migrations"
-if [ -f "migrate.py" ]; then
-    echo "Running migrations..."
-    python3 migrate.py upgrade --no-backup || {
-        log_warning "Migration via Python failed, trying inside container..."
-    }
-else
-    log_warning "migrate.py not found, skipping migrations"
-fi
+echo "ℹ️  Migrations will run automatically inside container on startup"
 
 # Step 6: Build and start containers
 log_step "Step 6: Build and Start Containers"

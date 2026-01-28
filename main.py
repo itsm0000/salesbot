@@ -17,6 +17,29 @@ load_dotenv()
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 
+def run_migrations():
+    """Run database migrations on startup (inside container)"""
+    try:
+        from alembic.config import Config
+        from alembic import command
+        
+        # Check if alembic.ini exists
+        if not os.path.exists("alembic.ini"):
+            print("⚠️  alembic.ini not found, skipping migrations")
+            return
+        
+        alembic_cfg = Config("alembic.ini")
+        print("🔄 Running database migrations...")
+        command.upgrade(alembic_cfg, "head")
+        print("✅ Migrations complete")
+    except ImportError:
+        print("⚠️  Alembic not installed, skipping migrations")
+    except Exception as e:
+        # Don't fail hard on migration errors - log and continue
+        # This allows the app to start even if DB is already migrated
+        print(f"⚠️  Migration note: {e}")
+
+
 def main():
     """Run the Muntazir application"""
     port = int(os.getenv("APP_PORT", 8000))
@@ -31,6 +54,9 @@ def main():
     ║                                                          ║
     ╚══════════════════════════════════════════════════════════╝
     """)
+    
+    # Run migrations before starting (inside container)
+    run_migrations()
     
     print(f"🚀 Starting server on http://localhost:{port}")
     print(f"📝 Debug mode: {debug}")
@@ -51,3 +77,4 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
     main()
+
