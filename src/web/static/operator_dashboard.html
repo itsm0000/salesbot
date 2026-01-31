@@ -1227,10 +1227,9 @@
             createBotData.persona_name = document.getElementById('new-bot-persona').value;
             createBotData.tone = document.getElementById('new-bot-tone').value;
             createBotData.target_audience = document.getElementById('new-bot-audience').value;
-            createBotData.operator_id = operatorId;
 
             try {
-                const res = await fetch(`${API_BASE}/bots`, {
+                const res = await fetch(`${API_BASE}/bots?operator_id=${operatorId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(createBotData)
