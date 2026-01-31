@@ -1005,7 +1005,114 @@
             }
         }
 
-        // ...
+        // Bot Status & Control
+        async function loadBotStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/business/status/${businessId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    botRunning = data.running;
+                    updateBotUI();
+                }
+            } catch (e) {
+                console.error('Error loading bot status:', e);
+            }
+        }
+
+        function updateBotUI() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const botIcon = document.getElementById('bot-icon');
+            const botStatusText = document.getElementById('bot-status-text');
+            const botStatusDesc = document.getElementById('bot-status-desc');
+            const toggleBtn = document.getElementById('toggle-bot-btn');
+
+            if (botRunning) {
+                statusDot.classList.add('active');
+                statusText.textContent = 'متصل';
+                botIcon.textContent = '🤖';
+                botStatusText.textContent = 'البوت يعمل';
+                botStatusDesc.textContent = 'البوت يرد على رسائل الزبائن تلقائياً';
+                toggleBtn.textContent = '⏹️ إيقاف البوت';
+                toggleBtn.classList.remove('btn-success');
+                toggleBtn.classList.add('btn-danger');
+            } else {
+                statusDot.classList.remove('active');
+                statusText.textContent = 'متوقف';
+                botIcon.textContent = '😴';
+                botStatusText.textContent = 'البوت متوقف';
+                botStatusDesc.textContent = 'اضغط الزر لتشغيل البوت والبدء بالرد على الزبائن';
+                toggleBtn.textContent = '🚀 تشغيل البوت';
+                toggleBtn.classList.remove('btn-danger');
+                toggleBtn.classList.add('btn-success');
+            }
+        }
+
+        async function toggleBot() {
+            const btn = document.getElementById('toggle-bot-btn');
+            const action = botRunning ? 'stop' : 'start';
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> جاري...';
+
+            try {
+                const res = await fetch(`${API_BASE}/business/${action}/${businessId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    botRunning = !botRunning;
+                    updateBotUI();
+                } else {
+                    alert(data.message || 'حدث خطأ');
+                }
+            } catch (e) {
+                console.error('Error toggling bot:', e);
+                alert('خطأ في الاتصال');
+            }
+
+            btn.disabled = false;
+            updateBotUI();
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/business/products/${businessId}`);
+                if (res.ok) {
+                    const products = await res.json();
+                    document.getElementById('products-count').textContent = products.length;
+                    renderProducts(products);
+                }
+            } catch (e) {
+                console.error('Error loading products:', e);
+            }
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('products-list');
+            if (products.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <p>لا توجد منتجات بعد</p>
+                        <p style="font-size: 0.875rem;">أضف منتجاتك ليتمكن البوت من عرضها للزبائن</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = products.map(p => `
+                <div class="product-item">
+                    <span class="product-name">${p.name}</span>
+                    <span class="product-price">${p.price?.toLocaleString() || 'غير محدد'} د.ع</span>
+                </div>
+            `).join('');
+        }
+
+        function openAddProductModal() {
+            alert('قريباً: إضافة منتجات');
+        }
 
         async function saveSettings() {
             const name = document.getElementById('settings-name').value;
